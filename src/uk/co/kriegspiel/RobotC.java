@@ -7,6 +7,8 @@ package uk.co.kriegspiel;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import kriegspiel.LudiiAdapter;
 import uk.co.kriegspiel.KSpielUI.GameMode;
 
 /**  RobotC
@@ -47,7 +49,14 @@ public class RobotC extends Robot{
         ksUI = theUI;
         myColor = color;
         myLastGreenList = new ArrayList<Integer>();
-
+        
+        if(myColor == Piece.Color.WHITE) {
+        	adapter = new LudiiAdapter(1);
+        }
+        else {
+        	adapter = new LudiiAdapter(2);
+        }
+        
         // extension of Robot
         sequence = new ArrayList<Integer>(); // pre-programmed move sequence (From, to, from, to, ....)
         openings = new Openings(myColor);
@@ -205,11 +214,11 @@ public class RobotC extends Robot{
         int KingLoc=0;
 
         for (int i=0; i<listMyPieceLocations.size(); i++){
-            if (ksApp.mainBoard.getOccupier(listMyPieceLocations.get(i)).value()== Piece.Value.ROOK
-                 || ksApp.mainBoard.getOccupier(listMyPieceLocations.get(i)).value()== Piece.Value.QUEEN){
+            if (adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.ROOK
+                 || adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.QUEEN){
                 RookLocs.add(listMyPieceLocations.get(i));
             }
-            if (ksApp.mainBoard.getOccupier(listMyPieceLocations.get(i)).value()== Piece.Value.KING){
+            if (adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.KING){
                 KingLoc = listMyPieceLocations.get(i);
             }
         }
@@ -228,7 +237,7 @@ public class RobotC extends Robot{
         // ask all such pieces to move if possible
         for (int i=0; i<listMyPieceLocations.size(); i++){
             if (IsSqInBackRows(listMyPieceLocations.get(i))){
-                Piece.Value piecevalue = ksApp.mainBoard.getOccupier(listMyPieceLocations.get(i)).value();
+                Piece.Value piecevalue = adapter.getOccupierValue(context, listMyPieceLocations.get(i));
                 if (piecevalue == Piece.Value.PAWN || piecevalue == Piece.Value.BISHOP || piecevalue == Piece.Value.KNIGHT){
                     // find this piece's valid moves
                     for (int j=0; j<listMyMovesFrom.size(); j++){
@@ -261,7 +270,7 @@ public class RobotC extends Robot{
         if (KingLoc != corner){
 
             // is corner already occupied by piece of mine ? But not the king!
-            if (ksUI.mainBoard.getOccupier(corner).color()==myColor && ksUI.mainBoard.getOccupier(corner).value() != Piece.Value.KING){
+            if (adapter.getOccupierColor(context, corner)==myColor && adapter.getOccupierValue(context, corner) != Piece.Value.KING){
                 // give it its marching order
                 for (int i=0; i<listMyMovesFrom.size(); i++){
                     // scan for a move out of the square
@@ -298,7 +307,7 @@ public class RobotC extends Robot{
 
                 pTo = ksApp.getP(xTo, yTo);
                 // before adding this move, check if a piece of mine is blocking
-                if (ksApp.mainBoard.getOccupier(pTo).color()==myColor){
+                if (adapter.getOccupierColor(context, pTo)==myColor){
                     // find a move for this piece if possible
                     for (int i=0; i<listMyMovesFrom.size(); i++){
                         if (listMyMovesFrom.get(i)==pTo){
@@ -553,7 +562,7 @@ private int getRook2(int corner){
         for (int i=0; i<listMyPieceLocations.size(); i++){
             if (   ksApp.getY(listMyPieceLocations.get(i)) <8
                 && ksApp.getY(listMyPieceLocations.get(i)) >1
-                && ksApp.mainBoard.getOccupier(listMyPieceLocations.get(i)).value() == Piece.Value.PAWN){
+                && adapter.getOccupierValue(context, listMyPieceLocations.get(i)) == Piece.Value.PAWN){
                 // check if this pawn is blocked
                 if (! existsInList(listMyMovesFrom,listMyPieceLocations.get(i))){
                     // it's blocked, so can I hit the block?
@@ -666,7 +675,7 @@ private int getRook2(int corner){
     private ArrayList<Integer> searchSequence(){
 
         // Ask board how many pieces remain
-        int Remain = ksApp.mainBoard.result.iBlackRemain+ksApp.mainBoard.result.iWhiteRemain;
+        int Remain = adapter.getResult(context).iBlackRemain+adapter.getResult(context).iWhiteRemain;
         if (Remain<17){
         // Three quarters cleared, so can we build a scanning sequence with Rooks or Queens?
         ArrayList<Integer> RookLocs = findRooksAndKing(); //find my rooks and queens, and the king
@@ -744,10 +753,10 @@ private int getRook2(int corner){
 
     private int KingHitsGreen(){ // tests if robot in check, and if so, is there a move in which king hits green (therefore checking) square
         int mark = -1; //default, no condition
-        if (ksApp.mainBoard.IsInCheck()){
+        if (adapter.isInCheck(context)){
             for (int i=0; i<listMyMovesFrom.size(); i++){
-                if ( ksApp.mainBoard.getSquare(listMyMovesFrom.get(i)).getOccupier().value == Piece.Value.KING   ){
-                    if ( ksApp.mainBoard.getSquare(listMyMovesTo.get(i)).isGreen() ){
+                if ( adapter.getOccupierValue(context, listMyMovesFrom.get(i)) == Piece.Value.KING   ){
+                    if ( adapter.isSquareGreen(context, listMyMovesTo.get(i))){
                         mark = i;
                     }
                 }
@@ -763,7 +772,7 @@ private int getRook2(int corner){
           ArrayList<Integer> move = new ArrayList<Integer>();
           int iFrom=0;
           int iTo=0;
-
+          result = adapter.getResult(context);
          // Clear any invalid pre-programmed sequence.
 
           if (sequence.size()>0){
@@ -771,7 +780,7 @@ private int getRook2(int corner){
           }
 
           // if this is the first move, choose an opening move sequence
-          if (ksApp.mainBoard.getMovesMade() < 2){
+          if (movesMade < 2){
               sequence = startSequence();  // modifies sequence
               // sequence = startSequence(sequence);
           } // end of choose opening move sequence
@@ -812,7 +821,7 @@ private int getRook2(int corner){
               }
               // if this was the result of a pawn try, is a piece threatened?
               // just have a look at piece rather than retrieve old pawn try announcement
-              if (ksApp.mainBoard.getOccupier(result.iRedSquare).value()==Piece.Value.PAWN){
+              if (adapter.getOccupierValue(context, result.iRedSquare)==Piece.Value.PAWN){
                   // identify threatened squares
                   int sq1=0;
                   int sq2=0;
@@ -839,7 +848,7 @@ private int getRook2(int corner){
           ArrayList<Integer> listPawnQueenings = new ArrayList<Integer>();
           ArrayList<Integer> listPawnQueenTakes = new ArrayList<Integer>();
           for (int j=0; j<listMyMovesFrom.size(); j++){
-              if (ksApp.mainBoard.getOccupier(listMyMovesFrom.get(j)).value() == Piece.Value.PAWN) {
+              if (adapter.getOccupierValue(context, listMyMovesFrom.get(j))== Piece.Value.PAWN) {
                   switch (myColor) {
 
                       case WHITE:
@@ -879,7 +888,7 @@ private int getRook2(int corner){
 
           ArrayList<Integer> listPawnMoves = new ArrayList<Integer>();
           for (int j=0; j<listMyMovesFrom.size(); j++){
-              if (ksApp.mainBoard.getOccupier(listMyMovesFrom.get(j)).value() == Piece.Value.PAWN) {
+              if (adapter.getOccupierValue(context, listMyMovesFrom.get(j)) == Piece.Value.PAWN) {
                   switch (myColor) {
 
                       case WHITE:
@@ -905,7 +914,7 @@ private int getRook2(int corner){
           ArrayList<Integer> listBackTo = new ArrayList<Integer>(); // move to
           ArrayList<Integer> listBackFrom = new ArrayList<Integer>(); // move from
           int backRow = -1; // default selected move number
-          if (ksUI.mainBoard.result.bQueenedPawn && ksUI.ksApp.myCfg.rules.bAnnounceQueens){
+          if (result.bQueenedPawn){
 
                // list any moves to my back (first) row
               for (int i=0; i<listMyMovesTo.size(); i++){
@@ -943,9 +952,9 @@ private int getRook2(int corner){
 
                          // is a king in check and in list to make a move to/on the back row?
                          boolean king = false;
-                         if (ksApp.mainBoard.result.bBlackInCheck || ksApp.mainBoard.result.bWhiteInCheck){
+                         if (result.bBlackInCheck || result.bWhiteInCheck){
                              for (int j=0; j<listBackTo.size(); j++){
-                                 if (ksApp.mainBoard.getSquare(listBackFrom.get(j)).getOccupier().value == Piece.Value.KING){
+                                 if (adapter.getOccupierValue(context, listBackFrom.get(j)) == Piece.Value.KING){
                                      backRow = j;
                                  }
                              }
@@ -1016,7 +1025,7 @@ private int getRook2(int corner){
                   boolean king = false;
 
                   for (int j=0; j<listCounterMoves.size(); j++){
-                      if (ksApp.mainBoard.getSquare(listMyMovesFrom.get(listCounterMoves.get(j))).getOccupier().value == Piece.Value.KING){
+                      if (adapter.getOccupierValue(context, listMyMovesFrom.get(listCounterMoves.get(j))) == Piece.Value.KING){
                           king = true;
                           iFrom = listMyMovesFrom.get(listCounterMoves.get(j));
                           iTo = listMyMovesTo.get(listCounterMoves.get(j));
@@ -1063,7 +1072,7 @@ private int getRook2(int corner){
                    // just make a random move
 
                    //V3.3  but let's try to avoid opponent's pawn try squares if possible
-                   triesList = ksUI.boardView.getOldTries();
+                   triesList = adapter.getOldTries();
 
 
                    boolean scan = true;
