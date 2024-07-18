@@ -54,7 +54,7 @@ public class Robot extends Remote{
   public Robot(){
       
   }
-  	
+  
     public Robot (KSpielApp theApp, KSpielUI theUI, Piece.Color color){
         ksApp = theApp;
         ksUI = theUI;
@@ -107,6 +107,47 @@ public class Robot extends Remote{
         ksUI.errorMsg(Error);
         ksUI.sysout(Error);
     }
+    
+    public int getX(int p){
+        int x = p % 8;
+        if (x == 0){ x=8;}
+        return x;
+      }
+    	
+      public int getY(int p){
+        int y = 1+(p-1)/8;
+        return y;
+      }
+      
+      // return the position as an Integer object for containing in an ArrayList
+      public Integer getP(int x, int y){
+          return x+(y-1)*8;
+      }
+      
+      // tests for adjacency of squares
+      public boolean isAdjacent(int p, int q){
+          boolean bAdjacent = false;
+          
+          if (distance(p,q) == 1) {
+          bAdjacent = true;
+          }
+          
+         //     if ((getX(p)==getX(q)+1 || getX(p)==getX(q) || getX(p) == getX(q)-1)
+         //       && getY(p)==getY(q)+1 || getY(p)==getX(q) || getY(p) == getY(q)-1){
+         //         bAdjacent = true;  
+         //     }
+          return bAdjacent;
+      }
+      
+      // measure no of squares (==King's moves) from p to q 
+      public int distance(int p, int q){
+          int iDistance;
+          int x = Math.abs(getX(p) - getX(q));     
+          int y = Math.abs(getY(p) - getY(q));
+          iDistance = Math.max(x,y);
+          
+          return iDistance;
+      }
     
     public void receiveContext(Context context) {
     	this.context = context;
@@ -250,7 +291,7 @@ public class Robot extends Remote{
                               break;
                       }
                       // test for a pawn take
-                      if (ksApp.getX(listMyMovesFrom.get(j)) != ksApp.getX(listMyMovesTo.get(j))){
+                      if (getX(listMyMovesFrom.get(j)) != getX(listMyMovesTo.get(j))){
                           listPawnMoves.add(j);
                       }
                   }
@@ -263,7 +304,7 @@ public class Robot extends Remote{
                   // have I got any moves which attack a square adjacent to a green I saw after my last move?
                   for (int j=0; j<listMyMovesTo.size(); j++){
                       for (int k=0; k<myLastGreenList.size(); k++)
-                        if (ksApp.isAdjacent(listMyMovesTo.get(j), myLastGreenList.get(k) )){
+                        if (isAdjacent(listMyMovesTo.get(j), myLastGreenList.get(k) )){
                           listCheckMoves.add(j);
                       }
                   }

@@ -510,13 +510,6 @@ public class LudiiAdapter {
 		// System.out.println("Illegal Move: " + from + "-" + to);
 		illegalMovesFrom.add(from);
 		illegalMovesTo.add(to);
-		/*
-		System.out.println("List of illegal moves played: ");
-		for(int i = 0; i < illegalMovesFrom.size(); i++) {
-			System.out.println(illegalMovesFrom.get(i) + "-" + illegalMovesTo.get(i));
-		}
-		System.out.println("");
-		*/
 	}
 	
 	public void resetIllegalMoves() {

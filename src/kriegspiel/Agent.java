@@ -242,16 +242,20 @@ public class Agent extends AI
 		}
 		System.out.println("");
 		*/
+		/*
 		if(adapter.wasOpponentInCheck(context)) {
 			testMyGreenList(context);
 			System.out.println("");
 		}
+		*/
 		// testGetOccupier(context);
 		// System.out.println("");
 		// displayResult(context);
 		// System.out.println("");
+		/*
 		displayMyLastResult(context);
 		System.out.println("");
+		*/
 		adapter.updateOpponentsKingLocation(context);
 		
 		// System.out.println("Legal moves list:");

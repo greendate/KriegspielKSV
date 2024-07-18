@@ -76,7 +76,23 @@ public class RobotC extends Robot{
     public void SendAcceptChallenge(boolean accept){
         ksUI.OnReceiveChallengeResponse(accept);
     }
-
+    
+    public String toLetter(int i){
+        String a="";
+        switch (i){
+                  case 1: a="a"; break;
+                  case 2: a="b"; break;
+                  case 3: a="c"; break;
+                  case 4: a="d"; break;
+                  case 5: a="e"; break;
+                  case 6: a="f"; break;
+                  case 7: a="g"; break;
+                  case 8: a="h"; break;             
+              }           
+        
+        return a;
+    }
+    
     private ArrayList<Integer> startSequence(){
         int choice = openings.getHowMany();
 
@@ -105,7 +121,7 @@ public class RobotC extends Robot{
         ArrayList<Integer> rooksAdjacent = new ArrayList<Integer>();
         ArrayList<Integer> rooksNotAdjacent = new ArrayList<Integer>();
         for (int i=1; i<RookLocs.size(); i++){
-             if ( ksApp.isAdjacent(KingLoc, RookLocs.get(i))){
+             if ( isAdjacent(KingLoc, RookLocs.get(i))){
                   rooksAdjacent.add(RookLocs.get(i));
              }
              else {
@@ -121,7 +137,7 @@ public class RobotC extends Robot{
                   for (int j=0; j<listMyMovesFrom.size() && searching ; j++){
                        if (rooksNotAdjacent.get(i) == listMyMovesFrom.get(j)){
                                     // revert = j; // save this move pointer in case I want to move a rook anyway
-                            if (ksApp.isAdjacent(listMyMovesTo.get(j),KingLoc)){
+                            if (isAdjacent(listMyMovesTo.get(j),KingLoc)){
                                         sequence.add(listMyMovesFrom.get(j));
                                         sequence.add(listMyMovesTo.get(j));
                                         found = true;
@@ -141,9 +157,9 @@ public class RobotC extends Robot{
                             if (rooksNotAdjacent.get(i) == listMyMovesFrom.get(j)){
 
                                 // test if move is to same row or col as king
-                                int x = ksApp.getX(listMyMovesTo.get(j));
-                                int y = ksApp.getY(listMyMovesTo.get(j));
-                                if (x == ksApp.getX(KingLoc) || y == ksApp.getY(KingLoc)){
+                                int x = getX(listMyMovesTo.get(j));
+                                int y = getY(listMyMovesTo.get(j));
+                                if (x == getX(KingLoc) || y == getY(KingLoc)){
                                     sequence.add(listMyMovesFrom.get(j));
                                     sequence.add(listMyMovesTo.get(j));
                                     found = true;
@@ -204,7 +220,7 @@ public class RobotC extends Robot{
     }
 
     private String coordID(int sq){
-        return ksUI.boardView.toLetter(ksUI.ksApp.getX(sq))+(ksUI.ksApp.getY(sq));
+        return toLetter(getX(sq))+(getY(sq));
     }
 
     private ArrayList<Integer> findRooksAndKing(){
@@ -283,11 +299,11 @@ public class RobotC extends Robot{
 
             // now move the king
             
-            int xDest = ksApp.getX(corner);
-            int yDest = ksApp.getY(corner);
+            int xDest = getX(corner);
+            int yDest = getY(corner);
 
-            int xKing = ksApp.getX(KingLoc);
-            int yKing = ksApp.getY(KingLoc);
+            int xKing = getX(KingLoc);
+            int yKing = getY(KingLoc);
             int xTo = xKing; int yTo = yKing;
             int pTo = KingLoc;
 
@@ -305,7 +321,7 @@ public class RobotC extends Robot{
                 if (yKing<yDest)
                     yTo = yKing+1;
 
-                pTo = ksApp.getP(xTo, yTo);
+                pTo = getP(xTo, yTo);
                 // before adding this move, check if a piece of mine is blocking
                 if (adapter.getOccupierColor(context, pTo)==myColor){
                     // find a move for this piece if possible
@@ -420,13 +436,13 @@ public class RobotC extends Robot{
             // do i have any pieces that need moving?
             // get target rows & cols and rows cols to avoid
             int tx; int ty; int ax; int ay;
-            tx = ksApp.getX(inside+incr); ty = ksApp.getY(inside+incr);
-            ax = ksApp.getX(inside); ay = ksApp.getY(inside);
+            tx = getX(inside+incr); ty = getY(inside+incr);
+            ax = getX(inside); ay = getY(inside);
 
             for (int i=0; i<listMyPieceLocations.size(); i++){
                 int p = listMyPieceLocations.get(i);
-                int x = ksApp.getX(p);
-                int y = ksApp.getY(p);
+                int x = getX(p);
+                int y = getY(p);
                 // ignore the scanner king and rooks
                 if ( wing != p && kingLoc != p && inside !=p
                      &&   (x==tx || y==ty)){
@@ -498,7 +514,7 @@ public class RobotC extends Robot{
     private boolean IsAvoiding(int p, int ax, int ay, int tx, int ty){
         boolean ok=false;
             // see if this satisfies avoidance criteria
-            if (ksApp.getX(p)!= ax && ksApp.getX(p) != tx && ksApp.getY(p) != ay && ksApp.getY(p) != ty){
+            if (getX(p)!= ax && getX(p) != tx && getY(p) != ay && getY(p) != ty){
                 ok = true;
             }
         return ok;
@@ -560,15 +576,15 @@ private int getRook2(int corner){
         // if so, can I hit the blocking piece?
         ArrayList<Integer> listBlockCleaners = new ArrayList<Integer>();
         for (int i=0; i<listMyPieceLocations.size(); i++){
-            if (   ksApp.getY(listMyPieceLocations.get(i)) <8
-                && ksApp.getY(listMyPieceLocations.get(i)) >1
+            if (   getY(listMyPieceLocations.get(i)) <8
+                && getY(listMyPieceLocations.get(i)) >1
                 && adapter.getOccupierValue(context, listMyPieceLocations.get(i)) == Piece.Value.PAWN){
                 // check if this pawn is blocked
                 if (! existsInList(listMyMovesFrom,listMyPieceLocations.get(i))){
                     // it's blocked, so can I hit the block?
                     int inc=1;
                     if (myColor == Piece.Color.WHITE) inc = 1; else inc = -1;
-                    int target = ksApp.getP(ksApp.getX(listMyPieceLocations.get(i)), ksApp.getY(listMyPieceLocations.get(i))+1);
+                    int target = getP(getX(listMyPieceLocations.get(i)), getY(listMyPieceLocations.get(i))+1);
                     for (int j=0; j<listMyMovesTo.size(); j++){
                         if (listMyMovesTo.get(j)==target){
                             listBlockCleaners.add(j);
@@ -598,12 +614,12 @@ private int getRook2(int corner){
                 if (myColor == Piece.Color.BLACK){
                     for (int i=0; i<listBlockCleaners.size(); i++){
                         // find a rook which has a legal move to the target row
-                        int ty = ksApp.getY(listBlockCleaners.get(i));
+                        int ty = getY(listBlockCleaners.get(i));
 
                         if (searching){
                         for (int j=1; j<rooklist.size();j++){
                             for (int k=0; k<listMyMovesFrom.size() && searching; k++){
-                                if (ksApp.getY(listMyMovesTo.get(k))==ty){
+                                if (getY(listMyMovesTo.get(k))==ty){
                                     searching = false;
                                     sequence.add(listMyMovesFrom.get(k));
                                     sequence.add(listMyMovesTo.get(k));
@@ -626,12 +642,12 @@ private int getRook2(int corner){
                     for (int i=listBlockCleaners.size()-1; i>-1; i--){
 
                         // find a rook which has a legal move to the target row
-                        int ty = ksApp.getY(listBlockCleaners.get(i));
+                        int ty = getY(listBlockCleaners.get(i));
 
                         if (searching){
                         for (int j=1; j<rooklist.size();j++){
                             for (int k=0; k<listMyMovesFrom.size() && searching; k++){
-                                if (ksApp.getY(listMyMovesTo.get(k))==ty){
+                                if (getY(listMyMovesTo.get(k))==ty){
                                     searching = false;
                                     sequence.add(listMyMovesFrom.get(k));
                                     sequence.add(listMyMovesTo.get(k));
@@ -658,13 +674,13 @@ private int getRook2(int corner){
 
     private ArrayList<Integer> rookmoves(int From, int To){
         // this makes a sequence of one or two rook moves From To
-        if (ksApp.getX(From) == ksApp.getX(To) || ksApp.getY(From) == ksApp.getY(To)){
+        if (getX(From) == getX(To) || getY(From) == getY(To)){
             // single move
             sequence.add(From);
             sequence.add(To);
         }
         else{
-            int inter = ksApp.getP((ksApp.getX(To)), ksApp.getY(From));
+            int inter = getP((getX(To)), getY(From));
             sequence.add(From);
             sequence.add(inter);
             sequence.add(inter);
@@ -827,11 +843,11 @@ private int getRook2(int corner){
                   int sq2=0;
                   if (myColor == Piece.Color.BLACK){
                       //opponent is WHITE
-                      if (ksApp.getX(result.iRedSquare)>1 && ksApp.getY(result.iRedSquare)<8){
-                          sq1  = ksApp.getP(ksApp.getX(result.iRedSquare)-1, ksApp.getY(result.iRedSquare)+1);
+                      if (getX(result.iRedSquare)>1 && getY(result.iRedSquare)<8){
+                          sq1  = getP(getX(result.iRedSquare)-1, getY(result.iRedSquare)+1);
                       }
-                      if (ksApp.getX(result.iRedSquare)<8 && ksApp.getY(result.iRedSquare)<8){
-                          sq2  = ksApp.getP(ksApp.getX(result.iRedSquare)+1, ksApp.getY(result.iRedSquare)+1);
+                      if (getX(result.iRedSquare)<8 && getY(result.iRedSquare)<8){
+                          sq2  = getP(getX(result.iRedSquare)+1, getY(result.iRedSquare)+1);
                       }
 
                       //look for escape moves
@@ -853,7 +869,7 @@ private int getRook2(int corner){
 
                       case WHITE:
                           if (listMyMovesFrom.get(j)>48){
-                              if (ksApp.getX(listMyMovesFrom.get(j)) != ksApp.getX(listMyMovesTo.get(j)))
+                              if (getX(listMyMovesFrom.get(j)) != getX(listMyMovesTo.get(j)))
                                         listPawnQueenTakes.add(j);
                               else
                                         listPawnQueenings.add(j);
@@ -862,7 +878,7 @@ private int getRook2(int corner){
 
                       case BLACK:
                           if (listMyMovesFrom.get(j)<17){
-                              if (ksApp.getX(listMyMovesFrom.get(j)) != ksApp.getX(listMyMovesTo.get(j)))
+                              if (getX(listMyMovesFrom.get(j)) != getX(listMyMovesTo.get(j)))
                                         listPawnQueenTakes.add(j);
                               else
                                         listPawnQueenings.add(j);
@@ -903,7 +919,7 @@ private int getRook2(int corner){
                       } // end switch
 
                       // test for a pawn take
-                      if (ksApp.getX(listMyMovesFrom.get(j)) != ksApp.getX(listMyMovesTo.get(j))){
+                      if (getX(listMyMovesFrom.get(j)) != getX(listMyMovesTo.get(j))){
                           listCounterMoves.add(j);
                       }
                   } // end if
@@ -965,10 +981,10 @@ private int getRook2(int corner){
                              int span = 0;
                              int dist = 0;
                              for (int j=1; j<listBackTo.size(); j++){
-                                 dist = ksUI.ksApp.getX(listBackTo.get(j))
-                                             - ksUI.ksApp.getX(listBackFrom.get(j));
+                                 dist = getX(listBackTo.get(j))
+                                             - getX(listBackFrom.get(j));
 
-                                 if (ksUI.ksApp.getY(listBackTo.get(j)) == ksUI.ksApp.getY(listBackFrom.get(j))){ // on same (back) row
+                                 if (getY(listBackTo.get(j)) == getY(listBackFrom.get(j))){ // on same (back) row
                                      if ( Math.abs(dist) > span){
                                          span = Math.abs(dist);
                                          backRow = j;
