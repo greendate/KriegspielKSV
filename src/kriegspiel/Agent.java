@@ -206,18 +206,12 @@ public class Agent extends AI
 	)
 	{
 		FastArrayList<Move> pseudoLegalMoves = game.moves(context).moves();
-		// contextCopy = context;
-		// System.out.println("Total moves by now: " + getMovesMade());
-		// System.out.println("Old tries: " + adapter.getOldTries());
 		
 		List <String> lastTryMessages = context.getNotes(player);
 		
-		// TODO: Remove or mark illegal moves here
 		if(lastTryMessages.size() != 0) {
 			if(lastTryMessages.get(0).equals("Illegal move")) {
 				adapter.updateIllegalMoves(lastFrom, lastTo);
-				// final int r = ThreadLocalRandom.current().nextInt(pseudoLegalMoves.size());
-				// return pseudoLegalMoves.get(r); 
 			}
 			else adapter.resetIllegalMoves();
 		} 
@@ -229,41 +223,10 @@ public class Agent extends AI
 			return pseudoLegalMoves.get(r); 
 		}
 		
-		/*
-		int oppTries = context.score(opponent);
-		
-		List <String> refereeMessages = context.getNotes(opponent);
-		
-		int pawnTries = context.score(player);
-		*/ 
-		/*
-		if(adapter.isInCheck(context)) {
-			testGreenList(context);
-		}
-		System.out.println("");
-		*/
-		/*
-		if(adapter.wasOpponentInCheck(context)) {
-			testMyGreenList(context);
-			System.out.println("");
-		}
-		*/
-		// testGetOccupier(context);
-		// System.out.println("");
-		// displayResult(context);
-		// System.out.println("");
-		/*
-		displayMyLastResult(context);
-		System.out.println("");
-		*/
 		adapter.updateOpponentsKingLocation(context);
 		
-		// System.out.println("Legal moves list:");
 		ArrayList <String> legalMoves = getLegalMoves(context);
-		// System.out.println("");
 		String chosenMove = chooseRandomMove(legalMoves);
-		// System.out.println("Legal human moves list:");
-		// getOpponentLegalMoves();
 		
 		movesMade++;
 		return performMove(chosenMove, pseudoLegalMoves);

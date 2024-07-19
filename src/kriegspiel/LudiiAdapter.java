@@ -2,7 +2,6 @@ package kriegspiel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import gnu.trove.set.hash.TIntHashSet;
 import other.context.Context;
