@@ -8,7 +8,7 @@ package uk.co.kriegspiel;
 import java.util.ArrayList;
 import java.util.Random;
 
-import kriegspiel.LudiiAdapter;
+import kriegspiel.Referee;
 import uk.co.kriegspiel.KSpielUI.GameMode;
 
 /**  RobotC
@@ -51,10 +51,10 @@ public class RobotC extends Robot{
         myLastGreenList = new ArrayList<Integer>();
         
         if(myColor == Piece.Color.WHITE) {
-        	adapter = new LudiiAdapter(1);
+        	referee = new Referee(1);
         }
         else {
-        	adapter = new LudiiAdapter(2);
+        	referee = new Referee(2);
         }
         
         // extension of Robot
@@ -230,11 +230,11 @@ public class RobotC extends Robot{
         int KingLoc=0;
 
         for (int i=0; i<listMyPieceLocations.size(); i++){
-            if (adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.ROOK
-                 || adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.QUEEN){
+            if (referee.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.ROOK
+                 || referee.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.QUEEN){
                 RookLocs.add(listMyPieceLocations.get(i));
             }
-            if (adapter.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.KING){
+            if (referee.getOccupierValue(context, listMyPieceLocations.get(i))== Piece.Value.KING){
                 KingLoc = listMyPieceLocations.get(i);
             }
         }
@@ -253,7 +253,7 @@ public class RobotC extends Robot{
         // ask all such pieces to move if possible
         for (int i=0; i<listMyPieceLocations.size(); i++){
             if (IsSqInBackRows(listMyPieceLocations.get(i))){
-                Piece.Value piecevalue = adapter.getOccupierValue(context, listMyPieceLocations.get(i));
+                Piece.Value piecevalue = referee.getOccupierValue(context, listMyPieceLocations.get(i));
                 if (piecevalue == Piece.Value.PAWN || piecevalue == Piece.Value.BISHOP || piecevalue == Piece.Value.KNIGHT){
                     // find this piece's valid moves
                     for (int j=0; j<listMyMovesFrom.size(); j++){
@@ -286,7 +286,7 @@ public class RobotC extends Robot{
         if (KingLoc != corner){
 
             // is corner already occupied by piece of mine ? But not the king!
-            if (adapter.getOccupierColor(context, corner)==myColor && adapter.getOccupierValue(context, corner) != Piece.Value.KING){
+            if (referee.getOccupierColor(context, corner)==myColor && referee.getOccupierValue(context, corner) != Piece.Value.KING){
                 // give it its marching order
                 for (int i=0; i<listMyMovesFrom.size(); i++){
                     // scan for a move out of the square
@@ -323,7 +323,7 @@ public class RobotC extends Robot{
 
                 pTo = getP(xTo, yTo);
                 // before adding this move, check if a piece of mine is blocking
-                if (adapter.getOccupierColor(context, pTo)==myColor){
+                if (referee.getOccupierColor(context, pTo)==myColor){
                     // find a move for this piece if possible
                     for (int i=0; i<listMyMovesFrom.size(); i++){
                         if (listMyMovesFrom.get(i)==pTo){
@@ -578,7 +578,7 @@ private int getRook2(int corner){
         for (int i=0; i<listMyPieceLocations.size(); i++){
             if (   getY(listMyPieceLocations.get(i)) <8
                 && getY(listMyPieceLocations.get(i)) >1
-                && adapter.getOccupierValue(context, listMyPieceLocations.get(i)) == Piece.Value.PAWN){
+                && referee.getOccupierValue(context, listMyPieceLocations.get(i)) == Piece.Value.PAWN){
                 // check if this pawn is blocked
                 if (! existsInList(listMyMovesFrom,listMyPieceLocations.get(i))){
                     // it's blocked, so can I hit the block?
@@ -691,7 +691,7 @@ private int getRook2(int corner){
     private ArrayList<Integer> searchSequence(){
 
         // Ask board how many pieces remain
-        int Remain = adapter.getResult(context).iBlackRemain+adapter.getResult(context).iWhiteRemain;
+        int Remain = referee.getResult(context).iBlackRemain+referee.getResult(context).iWhiteRemain;
         if (Remain<17){
         // Three quarters cleared, so can we build a scanning sequence with Rooks or Queens?
         ArrayList<Integer> RookLocs = findRooksAndKing(); //find my rooks and queens, and the king
@@ -769,10 +769,10 @@ private int getRook2(int corner){
 
     private int KingHitsGreen(){ // tests if robot in check, and if so, is there a move in which king hits green (therefore checking) square
         int mark = -1; //default, no condition
-        if (adapter.isInCheck(context)){
+        if (referee.isInCheck(context)){
             for (int i=0; i<listMyMovesFrom.size(); i++){
-                if ( adapter.getOccupierValue(context, listMyMovesFrom.get(i)) == Piece.Value.KING   ){
-                    if ( adapter.isSquareGreen(context, listMyMovesTo.get(i))){
+                if ( referee.getOccupierValue(context, listMyMovesFrom.get(i)) == Piece.Value.KING   ){
+                    if ( referee.isSquareGreen(context, listMyMovesTo.get(i))){
                         mark = i;
                     }
                 }
@@ -788,7 +788,7 @@ private int getRook2(int corner){
           ArrayList<Integer> move = new ArrayList<Integer>();
           int iFrom=0;
           int iTo=0;
-          result = adapter.getResult(context);
+          result = referee.getResult(context);
          // Clear any invalid pre-programmed sequence.
 
           if (sequence.size()>0){
@@ -837,7 +837,7 @@ private int getRook2(int corner){
               }
               // if this was the result of a pawn try, is a piece threatened?
               // just have a look at piece rather than retrieve old pawn try announcement
-              if (adapter.getOccupierValue(context, result.iRedSquare)==Piece.Value.PAWN){
+              if (referee.getOccupierValue(context, result.iRedSquare)==Piece.Value.PAWN){
                   // identify threatened squares
                   int sq1=0;
                   int sq2=0;
@@ -864,7 +864,7 @@ private int getRook2(int corner){
           ArrayList<Integer> listPawnQueenings = new ArrayList<Integer>();
           ArrayList<Integer> listPawnQueenTakes = new ArrayList<Integer>();
           for (int j=0; j<listMyMovesFrom.size(); j++){
-              if (adapter.getOccupierValue(context, listMyMovesFrom.get(j))== Piece.Value.PAWN) {
+              if (referee.getOccupierValue(context, listMyMovesFrom.get(j))== Piece.Value.PAWN) {
                   switch (myColor) {
 
                       case WHITE:
@@ -904,7 +904,7 @@ private int getRook2(int corner){
 
           ArrayList<Integer> listPawnMoves = new ArrayList<Integer>();
           for (int j=0; j<listMyMovesFrom.size(); j++){
-              if (adapter.getOccupierValue(context, listMyMovesFrom.get(j)) == Piece.Value.PAWN) {
+              if (referee.getOccupierValue(context, listMyMovesFrom.get(j)) == Piece.Value.PAWN) {
                   switch (myColor) {
 
                       case WHITE:
@@ -970,7 +970,7 @@ private int getRook2(int corner){
                          boolean king = false;
                          if (result.bBlackInCheck || result.bWhiteInCheck){
                              for (int j=0; j<listBackTo.size(); j++){
-                                 if (adapter.getOccupierValue(context, listBackFrom.get(j)) == Piece.Value.KING){
+                                 if (referee.getOccupierValue(context, listBackFrom.get(j)) == Piece.Value.KING){
                                      backRow = j;
                                  }
                              }
@@ -1041,7 +1041,7 @@ private int getRook2(int corner){
                   boolean king = false;
 
                   for (int j=0; j<listCounterMoves.size(); j++){
-                      if (adapter.getOccupierValue(context, listMyMovesFrom.get(listCounterMoves.get(j))) == Piece.Value.KING){
+                      if (referee.getOccupierValue(context, listMyMovesFrom.get(listCounterMoves.get(j))) == Piece.Value.KING){
                           king = true;
                           iFrom = listMyMovesFrom.get(listCounterMoves.get(j));
                           iTo = listMyMovesTo.get(listCounterMoves.get(j));
@@ -1088,7 +1088,7 @@ private int getRook2(int corner){
                    // just make a random move
 
                    //V3.3  but let's try to avoid opponent's pawn try squares if possible
-                   triesList = adapter.getOldTries();
+                   triesList = referee.getOldTries();
 
 
                    boolean scan = true;

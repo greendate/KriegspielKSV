@@ -10,7 +10,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import other.context.Context;
 import kriegspiel.Agent;
-import kriegspiel.LudiiAdapter;
+import kriegspiel.Referee;
 
 /**  The Robot class simulates a remote opponent
  *
@@ -34,7 +34,7 @@ public class Robot extends Remote{
   protected Result result;  // result of his move
   protected Result myLastResult; // result of my last move
   protected Context context;
-  protected LudiiAdapter adapter;
+  protected Referee referee;
   protected int movesMade;
   private int lastFrom = 0;
   private int lastTo = 0;
@@ -62,10 +62,10 @@ public class Robot extends Remote{
         ksUI = theUI;
         myColor = color;
         if(myColor == Piece.Color.WHITE) {
-        	adapter = new LudiiAdapter(1);
+        	referee = new Referee(1);
         }
         else {
-        	adapter = new LudiiAdapter(2);
+        	referee = new Referee(2);
         }
         myLastGreenList = new ArrayList<Integer>();
         
@@ -156,11 +156,11 @@ public class Robot extends Remote{
     }
     
     public void communicateIllegalMove() {
-    	adapter.updateIllegalMoves(lastFrom, lastTo);
+    	referee.updateIllegalMoves(lastFrom, lastTo);
     }
     
     public void communicateLegalMove() {
-    	adapter.resetIllegalMoves();
+    	referee.resetIllegalMoves();
     }
     
     public ArrayList <Integer> getLastMove() {
@@ -178,10 +178,10 @@ public class Robot extends Remote{
       
       // get result of opponent's move
 	   this.movesMade = iMovesMade;
-       result = adapter.getResult(context);
-       myLastResult = adapter.getMyLastResult(context);
-       myLastGreenList = adapter.getMyLastGreenList(context);
-       adapter.updateOpponentsKingLocation(context);
+       result = referee.getResult(context);
+       myLastResult = referee.getMyLastResult(context);
+       myLastGreenList = referee.getMyLastGreenList(context);
+       referee.updateOpponentsKingLocation(context);
        
        if (result.error != Result.ErrorCode.NO_ERROR ){
            // an error has occurred in the game logic
@@ -224,7 +224,7 @@ public class Robot extends Remote{
           
           // make a list of the locations of all my pieces
           for (int i = 1; i<65; i++){
-            if (adapter.getOccupierColor(context, i) == myColor){
+            if (referee.getOccupierColor(context, i) == myColor){
               listMyPieceLocations.add(i);
             }     
           }
@@ -238,7 +238,7 @@ public class Robot extends Remote{
               // Piece by piece
               // ksApp.mainBoard.clearLegalMoves();
               // get all illuminated and legal moves for the piece located at get(i)
-        	  ArrayList<Integer> tempWrappedList = adapter.findLegalMovesFrom(context, listMyPieceLocations.get(i));
+        	  ArrayList<Integer> tempWrappedList = referee.findLegalMovesFrom(context, listMyPieceLocations.get(i));
               
               // just using the legal moves list referenced at (1) ...
               for (int j =0; j<tempWrappedList.size(); j++){
@@ -298,7 +298,7 @@ public class Robot extends Remote{
               // Can I promote a pawn? Accelerate if 4 or less rows from end
               ArrayList<Integer> listPawnMoves = new ArrayList<Integer>();
               for (int j=0; j<listMyMovesFrom.size(); j++){
-                  if (adapter.getOccupierValue(context, listMyMovesFrom.get(j)) == Piece.Value.PAWN) {
+                  if (referee.getOccupierValue(context, listMyMovesFrom.get(j)) == Piece.Value.PAWN) {
                       switch (myColor) {
                           case WHITE:
                               if (listMyMovesFrom.get(j)>32)
@@ -374,7 +374,7 @@ public class Robot extends Remote{
       
       for (int i=1; i<65; i++){
           // Piece occupier = ksApp.mainBoard.getOccupier(i);
-          if (adapter.getOccupierColor(context, i) == color)
+          if (referee.getOccupierColor(context, i) == color)
               remain++;
       }
       
@@ -387,7 +387,7 @@ public class Robot extends Remote{
       
       for (int i=1; i<65; i++){
           // Piece occupier = ksApp.mainBoard.getOccupier(i);
-          if (adapter.getOccupierColor(context, i)  == color && adapter.getOccupierValue(context, i)  == value)
+          if (referee.getOccupierColor(context, i)  == color && referee.getOccupierValue(context, i)  == value)
               remain++;
       }
       

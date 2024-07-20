@@ -9,7 +9,7 @@ import other.state.container.ContainerState;
 import uk.co.kriegspiel.Piece;
 import uk.co.kriegspiel.Result;
 
-public class LudiiAdapter {
+public class Referee {
 	
 	protected int player = -1;
 	
@@ -23,7 +23,7 @@ public class LudiiAdapter {
 	
 	private ArrayList <Integer> illegalMovesTo = new ArrayList <Integer>();
 	
-	public LudiiAdapter(final int playerID) {
+	public Referee(final int playerID) {
 		this.player = playerID;
 		this.opponent = this.players - playerID + 1;
 	}
