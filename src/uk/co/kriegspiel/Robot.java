@@ -36,6 +36,8 @@ public class Robot extends Remote{
   protected Context context;
   protected LudiiAdapter adapter;
   protected int movesMade;
+  private int lastFrom = 0;
+  private int lastTo = 0;
   ArrayList<Integer> myLastGreenList; // from my last move
   
   // Declare lists
@@ -153,6 +155,21 @@ public class Robot extends Remote{
     	this.context = context;
     }
     
+    public void communicateIllegalMove() {
+    	adapter.updateIllegalMoves(lastFrom, lastTo);
+    }
+    
+    public void communicateLegalMove() {
+    	adapter.resetIllegalMoves();
+    }
+    
+    public ArrayList <Integer> getLastMove() {
+    	ArrayList <Integer> move = new ArrayList <Integer> ();
+    	move.add(lastFrom);
+    	move.add(lastTo);
+    	return move;
+    }
+    
   @Override
     public void SendMove(int iFrom, int iTo, int iMovesMade){
       
@@ -239,7 +256,9 @@ public class Robot extends Remote{
               ArrayList<Integer> move = decideMove(); // this method overridden by mutable robot types
 
               // Relay the move to the UI via the Remote.ReceiveMove() call
-              ReceiveMove(move.get(0), move.get(1));
+              lastFrom = move.get(0);
+              lastTo = move.get(1);
+              // ReceiveMove(move.get(0), move.get(1));
               // record the result
               
               // myLastResult = ksApp.mainBoard.getResult().copy();      

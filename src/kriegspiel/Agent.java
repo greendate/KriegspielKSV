@@ -2,17 +2,14 @@ package kriegspiel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import game.Game;
-import gnu.trove.set.hash.TIntHashSet;
 import main.collections.FastArrayList;
 import other.AI;
 import other.context.Context;
 import other.move.Move;
-import other.state.container.ContainerState;
 import uk.co.kriegspiel.Piece;
-import uk.co.kriegspiel.Result;
+import uk.co.kriegspiel.RobotC;
 
 public class Agent extends AI
 {
@@ -25,13 +22,7 @@ public class Agent extends AI
 	
 	private final int players = 2;
 	
-	private int lastFrom = 0;
-	
-	private int lastTo = 0;
-	
-	// private Context contextCopy;
-	
-	LudiiAdapter adapter;
+	private RobotC robot;
 	
 	private int movesMade;
 	
@@ -44,23 +35,8 @@ public class Agent extends AI
 	
 	//-------------------------------------------------------------------------
 	
-	// private functions
-	
 	private boolean aiPlayerWhite() {
 		return (player == 1);
-	}
-	
-	private String chooseRandomMove(ArrayList <String> legalMoves) {
-		final int r = ThreadLocalRandom.current().nextInt(legalMoves.size());
-		return legalMoves.get(r); 
-	}
-	
-	private int getX(int sq) {
-		return sq % 8;
-	}
-	
-	private int getY(int sq) {
-		return sq / 8;
 	}
 	
 	private int getMovesMade() {
@@ -72,128 +48,15 @@ public class Agent extends AI
 		}
 	}
 	
-	//-------------------------------------------------------------------------
-	// following functions will be used only for testing purposes
-	
-	private String coordID(int sq) {
-		int x = getX(sq - 1);
-		int y = getY(sq - 1) + 1;
-		StringBuilder coordID = new StringBuilder();
-		coordID.append((char) ('A' + x));
-		coordID.append((char) ('0' + y));
-		return coordID.toString();
-	}
-	
-	private ArrayList<String> getLegalMoves(Context context) {
-		ArrayList<String> legalMoves = new ArrayList<String>();
-		for(int i = 1; i < 65; i++) {
-			if((adapter.getOccupierColor(context, i) == Piece.Color.WHITE && aiPlayerWhite()) || (adapter.getOccupierColor(context, i) == Piece.Color.BLACK && !aiPlayerWhite())) {
-				 ArrayList<Integer> toLocations = adapter.findLegalMovesFrom(context, i);
-				 for(int j = 0; j < toLocations.size(); j++) {
-					 int from = i;
-					 int to = toLocations.get(j);
-					 // System.out.println(adapter.getOccupierColor(context, i) + "-" + adapter.getOccupierValue(context, i) + " " + coordID(from) + "-" + coordID(to));
-					 legalMoves.add(coordID(from) + "-" + coordID(to));
-				 }
-			}
-		}
-    	return legalMoves;
-	}
-	
-	private ArrayList<String> getOpponentLegalMoves(Context context) {
-		ArrayList<String> legalMoves = new ArrayList<String>();
-		for(int i = 1; i < 65; i++) {
-			if((adapter.getOccupierColor(context, i) == Piece.Color.WHITE && !aiPlayerWhite()) || (adapter.getOccupierColor(context, i) == Piece.Color.BLACK && aiPlayerWhite())) {
-				 ArrayList<Integer> toLocations = adapter.findLegalMovesFrom(context, i);
-				 for(int j = 0; j < toLocations.size(); j++) {
-					 int from = i;
-					 int to = toLocations.get(j);
-					 System.out.println(adapter.getOccupierColor(context, i) + "-" + adapter.getOccupierValue(context, i) + " " + coordID(from) + "-" + coordID(to));
-					 legalMoves.add(coordID(from) + "-" + coordID(to));
-				 }
-			}
-		}
-    	return legalMoves;
-	}
-	
-	private Move performMove(String move, FastArrayList<Move> pseudoLegalMoves) {
-		int from = (move.charAt(1) - '1') * 8 + move.charAt(0) - 'A';
-		int to = (move.charAt(4) - '1') * 8 + move.charAt(3) - 'A';
-		lastFrom = from + 1;
-		lastTo = to + 1;
+	private Move performMove(ArrayList <Integer> move, FastArrayList<Move> pseudoLegalMoves) {
 		for(Move pseudoMove: pseudoLegalMoves) {
-			if(pseudoMove.from() == from && pseudoMove.to() == to) 
+			if(pseudoMove.from() == move.get(0) - 1 && pseudoMove.to() == move.get(1) - 1) 
 				return pseudoMove;
 		}
 		return null;
 	}
 	
-	private void testGetOccupier(Context context) {
-		for(int i = 1; i < 65; i++) {
-			System.out.println(coordID(i) + ":" + adapter.getOccupierColor(context, i) + "-" + adapter.getOccupierValue(context, i));
-		}
-	}
-	
-	private void testGreenList(Context context) {
-		System.out.println("King in Check");
-		ArrayList<Integer> greenList = adapter.getGreenList(context);
-		System.out.println("Green List: ");
-		for(int i = 0; i < greenList.size(); i++) {
-			System.out.print(coordID(greenList.get(i)) + " ");
-		}
-		System.out.println(" ");
-		for(int i = 1; i < 65; i++) {
-			System.out.println(coordID(i) + " " + adapter.isSquareGreen(context, i));
-		}
-	}
-	
-	private void testMyGreenList(Context context) {
-		System.out.println("Opponent's King in Check");
-		ArrayList<Integer> greenList = adapter.getMyLastGreenList(context);
-		System.out.println("My Green List: ");
-		for(int i = 0; i < greenList.size(); i++) {
-			System.out.print(coordID(greenList.get(i)) + " ");
-		}
-	}
-	
-	private void displayResult(Context context) {
-		Result result = adapter.getResult(context);
-		System.out.println("bCheckmate: " + result.bCheckmate);
-		System.out.println("bStalemate: " + result.bStalemate);
-		System.out.println("bWhiteInCheck: " + result.bWhiteInCheck);
-		System.out.println("bBlackInCheck: " + result.bBlackInCheck);
-		System.out.println("bWhiteResigns: " + result.bWhiteResigns);
-		System.out.println("bBlackResigns: " + result.bBlackResigns);
-		System.out.println("bAgreedDraw: " + result.bAgreedDraw);
-		System.out.println("bQueenedPawn: " + result.bQueenedPawn);
-		System.out.println("iRedSquare: " + result.iRedSquare);
-		System.out.println("iCheckedKing: " + result.iCheckedKing);
-		System.out.println("iCheckByKnight: " + result.iCheckByKnight);
-		System.out.println("bCheckLong: " + result.bCheckLong);
-		System.out.println("bCheckShort: " + result.bCheckShort);
-		System.out.println("bCheckCol: " + result.bCheckCol);
-		System.out.println("bCheckRow: " + result.bCheckRow);
-		System.out.println("iRedisplayButton: " + result.iRedisplayButton);
-		System.out.println("iWhiteRemain: " + result.iWhiteRemain);
-		System.out.println("iBlackRemain: " + result.iBlackRemain);
-		System.out.println("error: " + result.error);
-		System.out.println("");
-	}
-	
-	private void displayMyLastResult(Context context) {
-		Result result = adapter.getMyLastResult(context);
-		System.out.println("bWhiteInCheck: " + result.bWhiteInCheck);
-		System.out.println("bBlackInCheck: " + result.bBlackInCheck);
-		System.out.println("iRedSquare: " + result.iRedSquare);
-		System.out.println("bCheckLong: " + result.bCheckLong);
-		System.out.println("bCheckShort: " + result.bCheckShort);
-		System.out.println("bCheckCol: " + result.bCheckCol);
-		System.out.println("bCheckRow: " + result.bCheckRow);
-		System.out.println("");
-	}
-	
 	//-------------------------------------------------------------------------
-	
 	
 	@Override
 	public Move selectAction
@@ -211,25 +74,24 @@ public class Agent extends AI
 		
 		if(lastTryMessages.size() != 0) {
 			if(lastTryMessages.get(0).equals("Illegal move")) {
-				adapter.updateIllegalMoves(lastFrom, lastTo);
+				robot.communicateIllegalMove();
 			}
-			else adapter.resetIllegalMoves();
+			else robot.communicateLegalMove();
 		} 
-		else adapter.resetIllegalMoves();
+		else robot.communicateLegalMove();
 		
 		if(pseudoLegalMoves.get(0).actionDescriptionStringShort().contentEquals("Promote")) {
-			// TODO: choose queen here
-			final int r = ThreadLocalRandom.current().nextInt(pseudoLegalMoves.size());
-			return pseudoLegalMoves.get(r); 
+			for(Move promotionMove:pseudoLegalMoves) {
+				if(promotionMove.what() == 11 || promotionMove.what() == 12) return promotionMove;
+			}
 		}
 		
-		adapter.updateOpponentsKingLocation(context);
-		
-		ArrayList <String> legalMoves = getLegalMoves(context);
-		String chosenMove = chooseRandomMove(legalMoves);
+		robot.receiveContext(context);
+		robot.SendMove(0, 0, getMovesMade());
+		ArrayList <Integer> move = robot.getLastMove();
 		
 		movesMade++;
-		return performMove(chosenMove, pseudoLegalMoves);
+		return performMove(move, pseudoLegalMoves);
 	}
 	
 	@Override
@@ -237,7 +99,10 @@ public class Agent extends AI
 	{
 		this.player = playerID;
 		this.opponent = this.players - playerID + 1;
-		this.adapter = new LudiiAdapter(playerID);
+		if(playerID == 1) 
+			this.robot = new RobotC(null, null, Piece.Color.WHITE);
+		else 
+			this.robot = new RobotC(null, null, Piece.Color.BLACK);
 	}
 	
 	//-------------------------------------------------------------------------
