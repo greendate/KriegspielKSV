@@ -506,7 +506,6 @@ public class LudiiAdapter {
 	}
 	
 	public void updateIllegalMoves(int from, int to) {
-		// System.out.println("Illegal Move: " + from + "-" + to);
 		illegalMovesFrom.add(from);
 		illegalMovesTo.add(to);
 	}

@@ -82,6 +82,7 @@ public class Agent extends AI
 		
 		if(pseudoLegalMoves.get(0).actionDescriptionStringShort().contentEquals("Promote")) {
 			for(Move promotionMove:pseudoLegalMoves) {
+				// choose queen as a promotion piece
 				if(promotionMove.what() == 11 || promotionMove.what() == 12) return promotionMove;
 			}
 		}
