@@ -1,7 +1,7 @@
 package main;
 
 import app.StartDesktopApp;
-import manager.ai.AIRegistry;
+import utils.AIRegistry;
 import mcts.ExampleDUCT;
 import mcts.ExampleUCT;
 import random.RandomAI;
